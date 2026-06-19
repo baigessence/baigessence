@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f4ef;
+  --foreground: #141414;
+  --gold: #c9a962;
+  --gold-light: #e8d5a3;
+  --gold-dark: #8b7340;
+  --cream: #f0ebe3;
+  --cream-dark: #e5ddd2;
+  --charcoal: #1c1c1c;
+  --charcoal-soft: #2a2a2a;
+  --muted: #6e6a63;
+  --border: rgba(28, 28, 28, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-cream: var(--cream);
+  --color-cream-dark: var(--cream-dark);
+  --color-charcoal: var(--charcoal);
+  --color-charcoal-soft: var(--charcoal-soft);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+}
+
+* {
+  scroll-behavior: auto;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-serif {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+/* Subtle grain — static pattern, no SVG filters */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+  background-size: 4px 4px;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gold-dark);
+  border-radius: 3px;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 1.2s ease forwards;
+}
+
+@keyframes kenBurns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+.animate-ken-burns {
+  animation: kenBurns 25s ease-out forwards;
+  will-change: auto;
+}
+
+.hero-image-wrap {
+  contain: strict;
+  transform: translateZ(0);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #e8d5a3 0%, #c9a962 45%, #8b7340 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.glass-dark {
+  background: rgba(28, 28, 28, 0.88);
+}
+
+.card-luxury {
+  background: white;
+  border: 1px solid var(--border);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.4s ease;
+}
+
+.card-luxury:hover {
+  border-color: rgba(201, 169, 98, 0.35);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.04),
+    0 20px 40px -12px rgba(201, 169, 98, 0.18);
+  transform: translateY(-4px);
+}
+
+.product-glow:hover {
+  box-shadow: 0 24px 48px -16px rgba(201, 169, 98, 0.28);
+}
+
+.btn-primary {
+  @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-none bg-charcoal px-8 py-3.5 text-xs font-semibold tracking-[0.2em] text-white uppercase transition-all duration-300 hover:bg-gold hover:text-charcoal;
+}
+
+.btn-outline {
+  @apply inline-flex items-center justify-center gap-2 rounded-none border border-charcoal/20 bg-transparent px-8 py-3.5 text-xs font-semibold tracking-[0.2em] text-charcoal uppercase transition-all duration-300 hover:border-charcoal hover:bg-charcoal hover:text-white;
+}
+
+.btn-gold {
+  @apply inline-flex items-center justify-center gap-2 rounded-none bg-gold px-8 py-3.5 text-xs font-semibold tracking-[0.2em] text-charcoal uppercase shadow-lg shadow-gold/20 transition-all duration-300 hover:bg-gold-dark hover:text-white hover:shadow-gold/30;
+}
+
+.btn-ghost-light {
+  @apply inline-flex items-center justify-center gap-2 rounded-none border border-white/30 bg-white/10 px-8 py-3.5 text-xs font-semibold tracking-[0.2em] text-white uppercase backdrop-blur-sm transition-all duration-300 hover:border-white hover:bg-white hover:text-charcoal;
+}
+
+.input-field {
+  @apply w-full border border-charcoal/10 bg-white px-4 py-3.5 text-sm transition-all duration-300 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/10;
+}
+
+.section-padding {
+  @apply py-20 md:py-28;
+}
+
+.admin-sidebar-link {
+  @apply flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-600 transition-colors hover:bg-cream hover:text-charcoal;
+}
+
+.admin-sidebar-link.active {
+  @apply bg-charcoal text-white hover:bg-charcoal hover:text-white;
+}
+
+.nav-link {
+  @apply relative text-[10px] font-medium tracking-[0.18em] text-charcoal uppercase transition-colors duration-300 xl:text-[11px] xl:tracking-[0.2em];
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateX(-50%);
+}
+
+.nav-link:hover {
+  color: var(--gold-dark);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}

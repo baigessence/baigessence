@@ -1,0 +1,26 @@
+[
+  {
+    "id": "promo1",
+    "name": "Summer Sale",
+    "description": "Enjoy 15% off on selected signature fragrances",
+    "discountType": "percentage",
+    "discountValue": 15,
+    "productIds": ["p1", "p4", "p7"],
+    "startDate": "2026-01-01T00:00:00.000Z",
+    "endDate": "2026-12-31T23:59:59.000Z",
+    "active": true,
+    "badge": "15% OFF"
+  },
+  {
+    "id": "promo2",
+    "name": "New Arrival Bundle",
+    "description": "Flat Rs. 500 off on Velvet Bloom",
+    "discountType": "fixed",
+    "discountValue": 500,
+    "productIds": ["p5"],
+    "startDate": "2026-01-01T00:00:00.000Z",
+    "endDate": "2026-12-31T23:59:59.000Z",
+    "active": true,
+    "badge": "SAVE Rs. 500"
+  }
+]
