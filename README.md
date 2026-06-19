@@ -90,15 +90,37 @@ supabase/
 data/                 # Sample seed data (for db:seed)
 ```
 
-## Deployment
+## Deployment (Vercel)
 
-Set these environment variables in Vercel:
+### 1. Import from GitHub
+- Repository: `baigessence/baigessence`
+- **Framework Preset:** Next.js
+- **Root Directory:** leave empty (project root)
+- **Build Command:** `npm run build`
+- **Output Directory:** leave **empty** (do not set `.next` or `out`)
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SECRET_KEY`
-- `ADMIN_PASSWORD`
-- `ADMIN_SECRET`
+### 2. Environment variables
+Add these in Vercel → Project → Settings → Environment Variables (Production + Preview):
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key |
+| `SUPABASE_SECRET_KEY` | Supabase secret key (server only) |
+| `ADMIN_PASSWORD` | Admin dashboard password |
+| `ADMIN_SECRET` | Random session secret |
+
+### 3. Deploy
+After saving env vars, go to **Deployments** → **Redeploy** (use “Redeploy with existing Build Cache” unchecked).
+
+### If you see `404: NOT_FOUND` (Vercel white error page)
+Usually means the deployment did not build correctly or project settings are wrong:
+
+1. Open **Deployments** → latest deployment → check **Build Logs** for errors
+2. Confirm **Output Directory** is empty (most common fix)
+3. Confirm all 5 env vars above are set
+4. Confirm **Production Branch** is `main`
+5. Redeploy after fixing settings
 
 ```bash
 npm run build
