@@ -3,6 +3,7 @@ import Hero from "@/components/home/Hero";
 import CategoryShowcase from "@/components/home/CategoryShowcase";
 import BrandStory from "@/components/home/BrandStory";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
+import MoreProducts from "@/components/home/MoreProducts";
 import Testimonials from "@/components/home/Testimonials";
 import PromoBanner from "@/components/home/PromoBanner";
 import Newsletter from "@/components/home/Newsletter";
@@ -17,6 +18,7 @@ export default async function HomePage() {
       <TrustBadges />
       <CategoryShowcase />
       <FeaturedProducts />
+      <MoreProducts />
       <BrandStory />
       <PromoBanner promotions={promotions} />
       <Testimonials />

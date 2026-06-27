@@ -1,4 +1,4 @@
-import type { Category, Product, Promotion } from "@/lib/types";
+import type { Category, Product, Promotion, Order, OrderItem, OrderPaymentStatus } from "@/lib/types";
 
 export type ProductRow = {
   id: string;
@@ -34,6 +34,25 @@ export type PromotionRow = {
   badge: string | null;
 };
 
+export type OrderRow = {
+  id: string;
+  order_number: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  shipping_address: string;
+  shipping_city: string;
+  items: OrderItem[];
+  subtotal: number;
+  shipping: number;
+  total: number;
+  payment_method: string;
+  payment_status: OrderPaymentStatus;
+  safepay_tracker: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export function rowToProduct(row: ProductRow): Product {
   return {
     id: row.id,
@@ -52,6 +71,27 @@ export function rowToProduct(row: ProductRow): Product {
     inStock: row.in_stock,
     featured: row.featured,
     promotionId: row.promotion_id ?? undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function rowToOrder(row: OrderRow): Order {
+  return {
+    id: row.id,
+    orderNumber: row.order_number,
+    customerName: row.customer_name,
+    customerEmail: row.customer_email,
+    customerPhone: row.customer_phone,
+    shippingAddress: row.shipping_address,
+    shippingCity: row.shipping_city,
+    items: row.items ?? [],
+    subtotal: row.subtotal,
+    shipping: row.shipping,
+    total: row.total,
+    paymentMethod: row.payment_method,
+    paymentStatus: row.payment_status,
+    safepayTracker: row.safepay_tracker ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

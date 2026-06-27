@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock } from "lucide-react";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import { Logo } from "@/components/layout/AnnouncementBar";
 
 export default function AdminLoginForm() {
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -51,16 +52,32 @@ export default function AdminLoginForm() {
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted" />
+              <Lock
+                className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-muted"
+                aria-hidden
+              />
               <input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input-field pl-10"
+                className="input-field !pl-11 !pr-11"
                 placeholder="Enter admin password"
+                autoComplete="current-password"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                className="absolute top-1/2 right-3.5 -translate-y-1/2 text-muted transition-colors hover:text-charcoal"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -74,10 +91,6 @@ export default function AdminLoginForm() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <p className="mt-6 text-center text-xs text-muted">
-          Default password: baigessence2026
-        </p>
       </div>
     </div>
   );

@@ -4,7 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
-import { formatPrice } from "@/lib/utils";
+import {
+  calculateOrderTotal,
+  calculateShipping,
+  formatPrice,
+} from "@/lib/utils";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
@@ -21,6 +25,9 @@ export default function CartPage() {
       </div>
     );
   }
+
+  const shipping = calculateShipping(totalPrice);
+  const orderTotal = calculateOrderTotal(totalPrice);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
@@ -105,23 +112,21 @@ export default function CartPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Shipping</span>
-              <span>{totalPrice >= 3000 ? "Free" : "Rs. 250"}</span>
+              <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
             </div>
           </div>
           <div className="mt-4 flex justify-between border-t pt-4 text-lg font-medium">
             <span>Total</span>
-            <span>
-              {formatPrice(totalPrice + (totalPrice >= 3000 ? 0 : 250))}
-            </span>
+            <span>{formatPrice(orderTotal)}</span>
           </div>
           {totalPrice < 3000 && (
             <p className="mt-2 text-xs text-gold">
               Add {formatPrice(3000 - totalPrice)} more for free shipping
             </p>
           )}
-          <button className="btn-primary mt-6 w-full">
+          <Link href="/checkout" className="btn-primary mt-6 block w-full text-center">
             Proceed to Checkout
-          </button>
+          </Link>
           <Link
             href="/shop"
             className="mt-4 block text-center text-sm text-muted hover:text-charcoal"

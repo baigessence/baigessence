@@ -13,11 +13,14 @@
     "db:seed": "tsx scripts/seed-supabase.ts"
   },
   "dependencies": {
+    "@sfpy/node-core": "^0.3.5",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
+    "axios": "^1.18.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.21.0",
     "next": "16.2.9",
+    "qs": "^6.15.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.6.0",

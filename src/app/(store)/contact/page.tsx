@@ -5,44 +5,51 @@ import PageHero from "@/components/ui/PageHero";
 import SectionHeading from "@/components/ui/SectionHeading";
 import ContactForm from "@/components/contact/ContactForm";
 import { contactImages } from "@/lib/images";
+import {
+  getWhatsAppUrl,
+  SITE_ADDRESS,
+  SITE_CITY,
+  SITE_EMAIL,
+  SITE_PHONE,
+  SITE_PHONE_DISPLAY,
+} from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with BaigEssence. We're here to help with orders, product questions, and wholesale inquiries.",
+    "Get in touch with Baig Essence. Visit us in Lahore or reach us by phone, email, or WhatsApp.",
 };
 
 const contactCards = [
   {
     icon: Phone,
     title: "Call Us",
-    lines: ["+92 300 1234567", "Mon–Sat, 10am–8pm"],
-    href: "tel:+923001234567",
+    lines: [SITE_PHONE_DISPLAY, "Mon–Sat, 10am–8pm"],
+    href: `tel:${SITE_PHONE}`,
   },
   {
     icon: Mail,
     title: "Email Us",
-    lines: ["hello@baigessence.com", "We reply within 24 hours"],
-    href: "mailto:hello@baigessence.com",
+    lines: [SITE_EMAIL, "We reply within 24 hours"],
+    href: `mailto:${SITE_EMAIL}`,
   },
   {
     icon: MapPin,
     title: "Visit Us",
-    lines: ["Karachi, Pakistan", "By appointment only"],
-    href: "#map",
+    lines: [SITE_ADDRESS, SITE_CITY],
   },
   {
     icon: MessageCircle,
     title: "WhatsApp",
-    lines: ["+92 300 1234567", "Quick responses"],
-    href: "https://wa.me/923001234567",
+    lines: [SITE_PHONE_DISPLAY, "Quick responses"],
+    href: getWhatsAppUrl(),
   },
 ];
 
 const faqs = [
   {
     q: "How long does delivery take?",
-    a: "Karachi: 2–3 days. Other cities: 3–5 business days.",
+    a: "Lahore: 2–3 days. Other cities: 3–5 business days.",
   },
   {
     q: "Do you offer free shipping?",
@@ -50,7 +57,7 @@ const faqs = [
   },
   {
     q: "Can I return a fragrance?",
-    a: "Unopened products can be returned within 15 days.",
+    a: "See our Refund & Exchange Policy for eligibility within 7 days of delivery.",
   },
 ];
 
@@ -62,35 +69,52 @@ export default function ContactPage() {
         title="We'd Love to Hear From You"
         description="Questions about an order, a fragrance, or a bulk purchase? Our team is ready to help."
         image={contactImages.hero}
-        imageAlt="Contact BaigEssence"
+        imageAlt="Contact Baig Essence"
       />
 
-      {/* Contact cards */}
       <section className="relative z-10 -mt-12 pb-8">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {contactCards.map(({ icon: Icon, title, lines, href }) => (
-              <a
-                key={title}
-                href={href}
-                className="card-luxury group flex flex-col p-6 transition-transform hover:-translate-y-1"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-gold/20 bg-gold/5 transition-colors group-hover:bg-gold/10">
-                  <Icon className="h-5 w-5 text-gold-dark" />
-                </div>
-                <h3 className="font-serif text-lg text-charcoal">{title}</h3>
-                {lines.map((line) => (
-                  <p key={line} className="mt-1 text-sm text-muted">
-                    {line}
-                  </p>
-                ))}
-              </a>
-            ))}
+            {contactCards.map(({ icon: Icon, title, lines, href }) => {
+              const content = (
+                <>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-gold/20 bg-gold/5 transition-colors group-hover:bg-gold/10">
+                    <Icon className="h-5 w-5 text-gold-dark" />
+                  </div>
+                  <h3 className="font-serif text-lg text-charcoal">{title}</h3>
+                  {lines.map((line) => (
+                    <p key={line} className="mt-1 text-sm text-muted">
+                      {line}
+                    </p>
+                  ))}
+                </>
+              );
+
+              if (!href) {
+                return (
+                  <div key={title} className="card-luxury flex flex-col p-6">
+                    {content}
+                  </div>
+                );
+              }
+
+              return (
+                <a
+                  key={title}
+                  href={href}
+                  className="card-luxury group flex flex-col p-6 transition-transform hover:-translate-y-1"
+                  {...(href.startsWith("http")
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                >
+                  {content}
+                </a>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Form + info */}
       <section className="section-padding bg-white">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="grid gap-16 lg:grid-cols-5 lg:gap-20">
@@ -116,6 +140,15 @@ export default function ContactPage() {
               />
 
               <div className="space-y-6">
+                <div className="flex gap-4 border-b border-charcoal/5 pb-6">
+                  <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
+                  <div>
+                    <h4 className="font-medium text-charcoal">Our Location</h4>
+                    <p className="mt-1 text-sm text-muted">{SITE_ADDRESS}</p>
+                    <p className="text-sm text-muted">{SITE_CITY}</p>
+                  </div>
+                </div>
+
                 <div className="flex gap-4 border-b border-charcoal/5 pb-6">
                   <Clock className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
                   <div>
@@ -157,25 +190,6 @@ export default function ContactPage() {
                 </Link>
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Map placeholder */}
-      <section id="map" className="relative h-80 bg-charcoal md:h-96">
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-charcoal via-charcoal-soft to-charcoal">
-          <div className="text-center">
-            <MapPin className="mx-auto h-10 w-10 text-gold" />
-            <p className="mt-4 font-serif text-2xl text-white">Karachi, Pakistan</p>
-            <p className="mt-2 text-sm text-gray-400">Serving customers nationwide</p>
-            <a
-              href="https://maps.google.com/?q=Karachi,Pakistan"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-gold mt-6 inline-flex"
-            >
-              Open in Maps
-            </a>
           </div>
         </div>
       </section>

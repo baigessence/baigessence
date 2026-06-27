@@ -38,3 +38,34 @@ export type CartItem = {
   product: Product;
   quantity: number;
 };
+
+export type OrderItem = {
+  productId: string;
+  name: string;
+  slug: string;
+  price: number;
+  quantity: number;
+  image: string;
+  size: string;
+};
+
+export type OrderPaymentStatus = "pending" | "paid" | "failed" | "cancelled";
+
+export type Order = {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingAddress: string;
+  shippingCity: string;
+  items: OrderItem[];
+  subtotal: number;
+  shipping: number;
+  total: number;
+  paymentMethod: string;
+  paymentStatus: OrderPaymentStatus;
+  safepayTracker?: string;
+  createdAt: string;
+  updatedAt: string;
+};

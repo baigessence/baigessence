@@ -56,15 +56,15 @@ export default async function ProductPage({ params }: PageProps) {
 
       <div className="grid gap-12 lg:grid-cols-2">
         {/* Images */}
-        <div className="space-y-4">
-          <div className="relative aspect-square overflow-hidden bg-cream">
+        <div className="mx-auto w-full max-w-md space-y-4 lg:max-w-lg">
+          <div className="relative aspect-[3/4] overflow-hidden bg-cream">
             <Image
               src={product.image}
               alt={product.name}
               fill
               priority
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-contain p-6 md:p-8"
+              sizes="(max-width: 1024px) 100vw, 480px"
             />
             {hasDiscount && promotion?.badge && (
               <span className="absolute top-4 left-4 bg-gold px-3 py-1 text-xs font-bold tracking-wider text-charcoal uppercase">
@@ -75,8 +75,14 @@ export default async function ProductPage({ params }: PageProps) {
           {product.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {product.images.map((img, i) => (
-                <div key={i} className="relative aspect-square overflow-hidden bg-cream">
-                  <Image src={img} alt="" fill className="object-cover" sizes="100px" />
+                <div key={i} className="relative aspect-[3/4] overflow-hidden bg-cream">
+                  <Image
+                    src={img}
+                    alt=""
+                    fill
+                    className="object-contain p-2"
+                    sizes="100px"
+                  />
                 </div>
               ))}
             </div>

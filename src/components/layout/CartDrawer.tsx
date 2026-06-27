@@ -110,11 +110,11 @@ export default function CartDrawer() {
                 Shipping and taxes calculated at checkout
               </p>
               <Link
-                href="/cart"
+                href="/checkout"
                 onClick={() => setIsOpen(false)}
                 className="btn-primary w-full text-center"
               >
-                View Cart & Checkout
+                Checkout with Safepay
               </Link>
             </div>
           </>

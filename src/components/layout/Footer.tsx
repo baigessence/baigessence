@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { Logo } from "./AnnouncementBar";
+import SocialLinks from "./SocialLinks";
+import { policyLinks } from "@/content/policies";
+import {
+  SITE_ADDRESS,
+  SITE_EMAIL,
+  SITE_PHONE,
+  SITE_PHONE_DISPLAY,
+} from "@/lib/contact";
 
 export default function Footer() {
   return (
@@ -11,11 +19,12 @@ export default function Footer() {
           <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-gray-400">
             Premium long-lasting fragrances for those who appreciate the art of scent.
           </p>
+          <SocialLinks className="mt-6 justify-center" />
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-14 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           <div>
             <h3 className="mb-5 text-[10px] font-semibold tracking-[0.3em] text-gold uppercase">
               Shop
@@ -41,13 +50,16 @@ export default function Footer() {
 
           <div>
             <h3 className="mb-5 text-[10px] font-semibold tracking-[0.3em] text-gold uppercase">
-              Support
+              Legal
             </h3>
             <ul className="space-y-3 text-sm text-gray-400">
-              <li><Link href="/contact" className="transition-colors hover:text-gold">Contact Us</Link></li>
-              <li><Link href="#" className="transition-colors hover:text-gold">Shipping & Delivery</Link></li>
-              <li><Link href="#" className="transition-colors hover:text-gold">Returns & Exchanges</Link></li>
-              <li><Link href="#" className="transition-colors hover:text-gold">Track Order</Link></li>
+              {policyLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="transition-colors hover:text-gold">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -56,28 +68,34 @@ export default function Footer() {
               Contact
             </h3>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li className="flex items-center gap-3">
-                <Phone className="h-4 w-4 shrink-0 text-gold" />
-                +92 300 1234567
+              <li>
+                <a
+                  href={`tel:${SITE_PHONE}`}
+                  className="flex items-center gap-3 transition-colors hover:text-gold"
+                >
+                  <Phone className="h-4 w-4 shrink-0 text-gold" />
+                  {SITE_PHONE_DISPLAY}
+                </a>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail className="h-4 w-4 shrink-0 text-gold" />
-                hello@baigessence.com
+              <li>
+                <a
+                  href={`mailto:${SITE_EMAIL}`}
+                  className="flex items-center gap-3 transition-colors hover:text-gold"
+                >
+                  <Mail className="h-4 w-4 shrink-0 text-gold" />
+                  {SITE_EMAIL}
+                </a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                Karachi, Pakistan
+                <span>{SITE_ADDRESS}</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 text-xs text-gray-500 sm:flex-row">
-          <p>&copy; {new Date().getFullYear()} BaigEssence. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="#" className="transition-colors hover:text-gold">Privacy</Link>
-            <Link href="#" className="transition-colors hover:text-gold">Terms</Link>
-          </div>
+        <div className="mt-14 border-t border-white/5 pt-8 text-center text-xs text-gray-500">
+          <p>&copy; {new Date().getFullYear()} Baig Essence. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -72,6 +72,17 @@ ADMIN_SECRET=your-random-secret-key
 | `SUPABASE_SECRET_KEY` | Secret key — **server only**, for admin CRUD |
 | `ADMIN_PASSWORD` | Admin dashboard password |
 | `ADMIN_SECRET` | Session signing secret |
+| `NEXT_PUBLIC_SITE_URL` | Your site URL for payment redirects |
+| `SAFEPAY_SECRET_KEY` | Safepay secret key (server only) |
+| `SAFEPAY_MERCHANT_API_KEY` | Safepay merchant API key |
+| `SAFEPAY_ENVIRONMENT` | `sandbox` or `production` |
+
+### Safepay Checkout
+
+1. Run `supabase/migrations/003_orders.sql` in Supabase SQL Editor
+2. Add Safepay sandbox keys to `.env.local` (from [Safepay Dashboard](https://sandbox.getsafepay.com/dashboard/developers/api))
+3. Set webhook URL in Safepay: `https://your-domain.com/api/webhooks/safepay`
+4. Checkout flow: Cart → `/checkout` → Safepay hosted page → success/cancel
 
 ## Project Structure
 

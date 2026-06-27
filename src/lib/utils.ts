@@ -51,6 +51,27 @@ export function getDiscountedPrice(
   return { price, originalPrice, hasDiscount };
 }
 
+export const FREE_SHIPPING_THRESHOLD = 3000;
+export const STANDARD_SHIPPING_FEE = 250;
+
+export function calculateShipping(subtotal: number): number {
+  return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
+}
+
+export function calculateOrderTotal(subtotal: number): number {
+  return subtotal + calculateShipping(subtotal);
+}
+
+export function getSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "http://localhost:3000";
+}
+
 export function isPromotionActive(promotion: Promotion): boolean {
   if (!promotion.active) return false;
   const now = new Date();
