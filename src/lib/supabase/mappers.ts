@@ -1,4 +1,12 @@
-import type { Category, Product, Promotion, Order, OrderItem, OrderPaymentStatus } from "@/lib/types";
+import type {
+  Category,
+  Product,
+  Promotion,
+  Order,
+  OrderItem,
+  OrderPaymentStatus,
+  OrderFulfillmentStatus,
+} from "@/lib/types";
 
 export type ProductRow = {
   id: string;
@@ -48,6 +56,8 @@ export type OrderRow = {
   total: number;
   payment_method: string;
   payment_status: OrderPaymentStatus;
+  fulfillment_status: OrderFulfillmentStatus | null;
+  tracking_note: string | null;
   safepay_tracker: string | null;
   created_at: string;
   updated_at: string;
@@ -91,6 +101,8 @@ export function rowToOrder(row: OrderRow): Order {
     total: row.total,
     paymentMethod: row.payment_method,
     paymentStatus: row.payment_status,
+    fulfillmentStatus: row.fulfillment_status ?? "placed",
+    trackingNote: row.tracking_note ?? undefined,
     safepayTracker: row.safepay_tracker ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

@@ -114,7 +114,7 @@ export default function CartDrawer() {
                 onClick={() => setIsOpen(false)}
                 className="btn-primary w-full text-center"
               >
-                Checkout with Safepay
+                Checkout (Cash on Delivery)
               </Link>
             </div>
           </>

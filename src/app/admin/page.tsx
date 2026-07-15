@@ -1,17 +1,18 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Package, Tag, TrendingUp, ShoppingBag } from "lucide-react";
+import { Package, Tag, ShoppingBag, ClipboardList } from "lucide-react";
 import { verifyAdminSession } from "@/lib/auth";
-import { getProducts, getPromotions } from "@/lib/db";
+import { getOrders, getProducts, getPromotions } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
 
 export default async function AdminDashboard() {
   const isAdmin = await verifyAdminSession();
   if (!isAdmin) redirect("/admin/login");
 
-  const [products, promotions] = await Promise.all([
+  const [products, promotions, orders] = await Promise.all([
     getProducts(),
     getPromotions(),
+    getOrders(50),
   ]);
 
   const inStock = products.filter((p) => p.inStock).length;
@@ -19,10 +20,34 @@ export default async function AdminDashboard() {
   const totalValue = products.reduce((sum, p) => sum + p.price, 0);
 
   const stats = [
-    { label: "Total Products", value: products.length, icon: Package, color: "bg-blue-50 text-blue-600" },
-    { label: "In Stock", value: inStock, icon: ShoppingBag, color: "bg-green-50 text-green-600" },
-    { label: "Active Promotions", value: activePromos, icon: Tag, color: "bg-gold/10 text-gold-dark" },
-    { label: "Catalog Value", value: formatPrice(totalValue), icon: TrendingUp, color: "bg-purple-50 text-purple-600" },
+    {
+      label: "Orders",
+      value: orders.length,
+      icon: ClipboardList,
+      color: "bg-amber-50 text-amber-700",
+      href: "/admin/orders",
+    },
+    {
+      label: "Total Products",
+      value: products.length,
+      icon: Package,
+      color: "bg-blue-50 text-blue-600",
+      href: "/admin/products",
+    },
+    {
+      label: "In Stock",
+      value: inStock,
+      icon: ShoppingBag,
+      color: "bg-green-50 text-green-600",
+      href: "/admin/products",
+    },
+    {
+      label: "Active Promotions",
+      value: activePromos,
+      icon: Tag,
+      color: "bg-gold/10 text-gold-dark",
+      href: "/admin/promotions",
+    },
   ];
 
   return (
@@ -31,8 +56,12 @@ export default async function AdminDashboard() {
       <p className="mt-1 text-muted">Welcome to BaigEssence admin panel</p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="rounded-xl border bg-white p-6">
+        {stats.map(({ label, value, icon: Icon, color, href }) => (
+          <Link
+            key={label}
+            href={href}
+            className="rounded-xl border bg-white p-6 transition-shadow hover:shadow-md"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted">{label}</p>
@@ -42,41 +71,71 @@ export default async function AdminDashboard() {
                 <Icon className="h-5 w-5" />
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border bg-white p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-medium">Quick Actions</h2>
-          </div>
+          <h2 className="font-medium">Quick Actions</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Link href="/admin/products/new" className="btn-primary text-center text-xs">
+            <Link
+              href="/admin/orders"
+              className="btn-primary text-center text-xs"
+            >
+              View Orders
+            </Link>
+            <Link
+              href="/admin/products/new"
+              className="btn-outline text-center text-xs"
+            >
               Add Product
             </Link>
-            <Link href="/admin/promotions" className="btn-outline text-center text-xs">
+            <Link
+              href="/admin/promotions"
+              className="btn-outline text-center text-xs"
+            >
               Manage Promotions
             </Link>
-            <Link href="/admin/products" className="btn-outline text-center text-xs">
-              View All Products
-            </Link>
-            <Link href="/" target="_blank" className="btn-outline text-center text-xs">
-              View Storefront
-            </Link>
           </div>
+          <p className="mt-4 text-sm text-muted">
+            Catalog value: {formatPrice(totalValue)}
+          </p>
         </div>
 
         <div className="rounded-xl border bg-white p-6">
-          <h2 className="font-medium">Recent Products</h2>
-          <ul className="mt-4 space-y-3">
-            {products.slice(0, 5).map((p) => (
-              <li key={p.id} className="flex items-center justify-between text-sm">
-                <span>{p.name}</span>
-                <span className="text-muted">{formatPrice(p.price)}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="flex items-center justify-between">
+            <h2 className="font-medium">Recent Orders</h2>
+            <Link
+              href="/admin/orders"
+              className="text-xs text-gold-dark hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+          <div className="mt-4 space-y-3">
+            {orders.slice(0, 5).length === 0 ? (
+              <p className="text-sm text-muted">No orders yet.</p>
+            ) : (
+              orders.slice(0, 5).map((order) => (
+                <div
+                  key={order.id}
+                  className="flex items-center justify-between border-b border-charcoal/5 pb-3 last:border-0"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{order.orderNumber}</p>
+                    <p className="text-xs text-muted">{order.customerName}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">
+                      {formatPrice(order.total)}
+                    </p>
+                    <p className="text-xs text-muted">COD</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

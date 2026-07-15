@@ -316,8 +316,9 @@ export async function createOrder(data: CreateOrderInput): Promise<Order> {
       subtotal: data.subtotal,
       shipping: data.shipping,
       total: data.total,
-      payment_method: data.paymentMethod ?? "payfast",
+      payment_method: data.paymentMethod ?? "cod",
       payment_status: "pending",
+      fulfillment_status: "placed",
       safepay_tracker: data.safepayTracker ?? null,
     })
     .select("*")
@@ -325,6 +326,43 @@ export async function createOrder(data: CreateOrderInput): Promise<Order> {
 
   if (error) throw error;
   return rowToOrder(row as OrderRow);
+}
+
+export async function getOrders(limit = 100): Promise<Order[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data ?? []).map((row) => rowToOrder(row as OrderRow));
+}
+
+export async function deleteAllOrders(): Promise<number> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .delete()
+    .neq("id", "00000000-0000-0000-0000-000000000000")
+    .select("id");
+
+  if (error) throw error;
+  return data?.length ?? 0;
+}
+
+export async function deleteOrderById(id: string): Promise<boolean> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) throw error;
+  return !!data;
 }
 
 export async function getOrderById(id: string): Promise<Order | undefined> {
@@ -380,6 +418,41 @@ export async function updateOrderPaymentStatus(
 
   if (safepayTracker) {
     payload.safepay_tracker = safepayTracker;
+  }
+
+  const { data, error } = await supabase
+    .from("orders")
+    .update(payload)
+    .eq("id", id)
+    .select("*")
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ? rowToOrder(data as OrderRow) : null;
+}
+
+export async function updateOrderFulfillment(
+  id: string,
+  fulfillmentStatus: Order["fulfillmentStatus"],
+  trackingNote?: string | null
+): Promise<Order | null> {
+  const supabase = createAdminClient();
+  const payload: Record<string, unknown> = {
+    fulfillment_status: fulfillmentStatus,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (trackingNote !== undefined) {
+    payload.tracking_note = trackingNote?.trim() || null;
+  }
+
+  // When delivered, mark COD as paid
+  if (fulfillmentStatus === "delivered") {
+    payload.payment_status = "paid";
+  }
+
+  if (fulfillmentStatus === "cancelled") {
+    payload.payment_status = "cancelled";
   }
 
   const { data, error } = await supabase

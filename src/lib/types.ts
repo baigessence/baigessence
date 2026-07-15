@@ -51,6 +51,15 @@ export type OrderItem = {
 
 export type OrderPaymentStatus = "pending" | "paid" | "failed" | "cancelled";
 
+export type OrderFulfillmentStatus =
+  | "placed"
+  | "confirmed"
+  | "processing"
+  | "shipped"
+  | "out_for_delivery"
+  | "delivered"
+  | "cancelled";
+
 export type Order = {
   id: string;
   orderNumber: string;
@@ -65,6 +74,8 @@ export type Order = {
   total: number;
   paymentMethod: string;
   paymentStatus: OrderPaymentStatus;
+  fulfillmentStatus: OrderFulfillmentStatus;
+  trackingNote?: string;
   safepayTracker?: string;
   createdAt: string;
   updatedAt: string;

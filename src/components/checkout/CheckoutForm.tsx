@@ -13,7 +13,7 @@ import {
 
 export default function CheckoutForm() {
   const router = useRouter();
-  const { items, totalPrice } = useCart();
+  const { items, totalPrice, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
@@ -51,32 +51,10 @@ export default function CheckoutForm() {
         throw new Error(data.error || "Checkout failed");
       }
 
-      if (data.formAction && data.formFields) {
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = data.formAction;
-
-        Object.entries(data.formFields as Record<string, string>).forEach(
-          ([key, value]) => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = key;
-            input.value = value;
-            form.appendChild(input);
-          }
-        );
-
-        document.body.appendChild(form);
-        form.submit();
-        return;
-      }
-
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-        return;
-      }
-
-      throw new Error("No payment redirect returned");
+      clearCart();
+      router.push(
+        `/checkout/success?order=${encodeURIComponent(data.orderNumber)}&total=${data.total}`
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed");
       setLoading(false);
@@ -99,7 +77,7 @@ export default function CheckoutForm() {
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
       <h1 className="font-serif text-3xl">Checkout</h1>
       <p className="mt-2 text-sm text-muted">
-        Secure payment powered by PayFast
+        Cash on Delivery — pay when your order arrives
       </p>
 
       <form onSubmit={handleSubmit} className="mt-10 grid gap-12 lg:grid-cols-3">
@@ -189,6 +167,15 @@ export default function CheckoutForm() {
               </div>
             </div>
           </section>
+
+          <section className="border border-charcoal/10 bg-cream/40 p-6">
+            <h2 className="font-serif text-xl">Payment</h2>
+            <p className="mt-3 text-sm text-muted">
+              <strong className="text-charcoal">Cash on Delivery</strong> — pay
+              the courier in cash when your order is delivered. No online
+              payment is required.
+            </p>
+          </section>
         </div>
 
         <div className="h-fit border border-charcoal/10 bg-white p-6">
@@ -226,7 +213,7 @@ export default function CheckoutForm() {
               <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
             </div>
             <div className="flex justify-between text-lg font-medium">
-              <span>Total</span>
+              <span>Total (COD)</span>
               <span>{formatPrice(total)}</span>
             </div>
           </div>
@@ -242,7 +229,7 @@ export default function CheckoutForm() {
             disabled={loading}
             className="btn-primary mt-6 w-full disabled:opacity-50"
           >
-            {loading ? "Redirecting to PayFast..." : "Pay with PayFast"}
+            {loading ? "Placing order..." : "Place Order (Cash on Delivery)"}
           </button>
 
           <button

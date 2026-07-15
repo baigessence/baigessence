@@ -12,6 +12,7 @@ const navLinks = [
   { href: "/shop/female", label: "For Her" },
   { href: "/shop/unisex", label: "Unisex" },
   { href: "/shop", label: "Shop All" },
+  { href: "/track-order", label: "Track Order" },
   { href: "/about", label: "About Us" },
   { href: "/contact", label: "Contact" },
 ];

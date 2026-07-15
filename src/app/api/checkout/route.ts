@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildCheckoutLines } from "@/lib/checkout";
-import { createOrder, updateOrderPaymentStatus } from "@/lib/db";
-import { createPayfastCheckoutForm } from "@/lib/payfast";
+import { createOrder } from "@/lib/db";
+import { sendOrderEmails } from "@/lib/email";
 
 type CheckoutBody = {
   items: { productId: string; quantity: number }[];
@@ -53,27 +53,21 @@ export async function POST(request: Request) {
       subtotal,
       shipping,
       total,
-      paymentMethod: "payfast",
+      paymentMethod: "cod",
     });
 
-    const { formAction, formFields } = await createPayfastCheckoutForm({
-      basketId: order.orderNumber,
-      amountPkr: total,
-      customer: {
-        email: email.trim(),
-        phone: phone.trim(),
-      },
-    });
-
-    await updateOrderPaymentStatus(order.id, "pending", order.orderNumber);
+    // Emails should not block order success if the provider fails
+    try {
+      await sendOrderEmails(order);
+    } catch (emailError) {
+      console.error("Failed to send order emails:", emailError);
+    }
 
     return NextResponse.json({
-      paymentProvider: "payfast",
-      formAction,
-      formFields,
+      paymentMethod: "cod",
       orderId: order.id,
       orderNumber: order.orderNumber,
-      basketId: order.orderNumber,
+      total: order.total,
     });
   } catch (error) {
     console.error("Checkout error:", error);
