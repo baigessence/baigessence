@@ -146,7 +146,7 @@ export default async function ProductPage({ params }: PageProps) {
           <div className="mt-8 grid grid-cols-2 gap-4 text-sm text-muted">
             <div className="flex items-center gap-2">
               <Truck className="h-4 w-4 text-gold" />
-              Free shipping Rs. 3000+
+              Free shipping Rs. 4000+
             </div>
             <div className="flex items-center gap-2">
               <RotateCcw className="h-4 w-4 text-gold" />

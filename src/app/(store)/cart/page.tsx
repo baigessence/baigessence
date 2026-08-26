@@ -8,6 +8,7 @@ import {
   calculateOrderTotal,
   calculateShipping,
   formatPrice,
+  FREE_SHIPPING_THRESHOLD,
 } from "@/lib/utils";
 
 export default function CartPage() {
@@ -119,9 +120,10 @@ export default function CartPage() {
             <span>Total</span>
             <span>{formatPrice(orderTotal)}</span>
           </div>
-          {totalPrice < 3000 && (
+          {totalPrice < FREE_SHIPPING_THRESHOLD && (
             <p className="mt-2 text-xs text-gold">
-              Add {formatPrice(3000 - totalPrice)} more for free shipping
+              Add {formatPrice(FREE_SHIPPING_THRESHOLD - totalPrice)} more for
+              free shipping
             </p>
           )}
           <Link href="/checkout" className="btn-primary mt-6 block w-full text-center">

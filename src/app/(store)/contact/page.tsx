@@ -53,7 +53,7 @@ const faqs = [
   },
   {
     q: "Do you offer free shipping?",
-    a: "Yes, on all orders above Rs. 3,000.",
+    a: "Yes, on all orders above Rs. 4,000.",
   },
   {
     q: "Can I return a fragrance?",
@@ -163,7 +163,7 @@ export default function ContactPage() {
                   <div>
                     <h4 className="font-medium text-charcoal">Delivery</h4>
                     <p className="mt-1 text-sm text-muted">
-                      Nationwide shipping across Pakistan. Free delivery on orders above Rs. 3,000.
+                      Nationwide shipping across Pakistan. Free delivery on orders above Rs. 4,000.
                     </p>
                   </div>
                 </div>

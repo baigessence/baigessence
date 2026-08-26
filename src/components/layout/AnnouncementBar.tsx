@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Sparkles, Truck, RotateCcw, Shield, Gem } from "lucide-react";
 
 const announcements = [
-  "Free Shipping on Orders Above Rs. 3,000",
+  "Free Shipping on Orders Above Rs. 4,000",
   "15 Days Hassle-Free Returns",
   "Premium Long-Lasting Fragrances",
   "Crafted with Love in Pakistan",
@@ -28,7 +28,7 @@ export default function AnnouncementBar() {
 
 export function TrustBadges() {
   const badges = [
-    { icon: Truck, text: "Free Delivery", sub: "Orders Rs. 3000+" },
+    { icon: Truck, text: "Free Delivery", sub: "Orders Rs. 4000+" },
     { icon: RotateCcw, text: "Easy Returns", sub: "15 Day Policy" },
     { icon: Shield, text: "100% Authentic", sub: "Guaranteed" },
     { icon: Gem, text: "Premium Quality", sub: "Long Lasting" },

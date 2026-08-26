@@ -51,7 +51,7 @@ export function getDiscountedPrice(
   return { price, originalPrice, hasDiscount };
 }
 
-export const FREE_SHIPPING_THRESHOLD = 3000;
+export const FREE_SHIPPING_THRESHOLD = 4000;
 export const STANDARD_SHIPPING_FEE = 250;
 
 export function calculateShipping(subtotal: number): number {

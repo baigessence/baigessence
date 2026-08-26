@@ -12,7 +12,7 @@ A fast, mobile-responsive perfume e-commerce website with an admin dashboard for
 - Shopping cart with persistent storage
 - Promotional banners and sale badges
 - Mobile-responsive with hover effects
-- Free shipping banner (orders above Rs. 3,000)
+- Free shipping banner (orders above Rs. 4,000)
 
 ### Admin Dashboard (`/admin`)
 - Secure password-protected login
