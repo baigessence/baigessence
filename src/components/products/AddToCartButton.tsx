@@ -33,7 +33,7 @@ export default function AddToCartButton({ product }: { product: Product }) {
         className="btn-primary flex flex-1 items-center justify-center gap-2"
       >
         <ShoppingBag className="h-4 w-4" />
-        Add to Bag
+        Add to Cart
       </button>
     </div>
   );

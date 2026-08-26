@@ -104,16 +104,16 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
           {product.size} · {product.concentration}
         </p>
 
-        {/* Mobile: always-visible add to bag */}
+        {/* Mobile: always-visible add to cart */}
         {product.inStock ? (
           <button
             type="button"
             onClick={() => addItem(product)}
             className="mt-3 flex w-full items-center justify-center gap-1.5 bg-charcoal px-3 py-2.5 text-[10px] font-semibold tracking-widest text-white uppercase transition-colors hover:bg-gold hover:text-charcoal md:hidden"
-            aria-label={`Add ${product.name} to bag`}
+            aria-label={`Add ${product.name} to cart`}
           >
             <ShoppingBag className="h-3.5 w-3.5" />
-            Add to Bag
+            Add to Cart
           </button>
         ) : (
           <p className="mt-3 text-center text-[10px] tracking-wider text-muted uppercase md:hidden">

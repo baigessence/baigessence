@@ -16,7 +16,10 @@ type ResendSendResult = {
 };
 
 function getApiKey(): string | null {
-  return process.env.RESEND_API_KEY?.trim() || null;
+  // Strip accidental quotes/spaces from Vercel env paste (common cause of 401).
+  const raw = process.env.RESEND_API_KEY?.trim();
+  if (!raw) return null;
+  return raw.replace(/^["']|["']$/g, "").trim() || null;
 }
 
 function getFromAddress() {
