@@ -71,10 +71,28 @@ export async function POST(request: Request) {
       }
     }
 
+    let emailResult: { ok: boolean; errors: string[] } = {
+      ok: false,
+      errors: [],
+    };
     try {
-      await sendOrderEmails(order);
+      emailResult = await sendOrderEmails(order);
+      if (!emailResult.ok) {
+        console.error(
+          "Order emails incomplete:",
+          emailResult.errors.join(" | ")
+        );
+      }
     } catch (emailError) {
       console.error("Failed to send order emails:", emailError);
+      emailResult = {
+        ok: false,
+        errors: [
+          emailError instanceof Error
+            ? emailError.message
+            : "Email send failed",
+        ],
+      };
     }
 
     return NextResponse.json({
@@ -84,6 +102,8 @@ export async function POST(request: Request) {
       total: order.total,
       discount: order.discount,
       promoCode: order.promoCode,
+      emailSent: emailResult.ok,
+      emailErrors: emailResult.errors,
     });
   } catch (error) {
     console.error("Checkout error:", error);

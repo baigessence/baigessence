@@ -1,4 +1,3 @@
-import { Resend } from "resend";
 import {
   SITE_EMAIL,
   SITE_PHONE_DISPLAY,
@@ -11,10 +10,13 @@ import {
 import type { Order } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
 
-function getResend() {
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  if (!apiKey) return null;
-  return new Resend(apiKey);
+type ResendSendResult = {
+  id?: string;
+  error?: { name?: string; message?: string; statusCode?: number | null };
+};
+
+function getApiKey(): string | null {
+  return process.env.RESEND_API_KEY?.trim() || null;
 }
 
 function getFromAddress() {
@@ -33,6 +35,93 @@ function getSiteUrl() {
     process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ||
     "https://www.baigessence.com"
   );
+}
+
+/** Direct Resend HTTP API with retries — more reliable than SDK on some Windows/network setups. */
+async function sendViaResendApi(input: {
+  from: string;
+  to: string | string[];
+  subject: string;
+  html: string;
+  replyTo?: string;
+}): Promise<ResendSendResult> {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    return {
+      error: {
+        name: "missing_api_key",
+        message: "RESEND_API_KEY is not set",
+        statusCode: null,
+      },
+    };
+  }
+
+  const maxAttempts = 3;
+  let lastError: ResendSendResult["error"] = {
+    name: "application_error",
+    message: "Unable to fetch data. The request could not be resolved.",
+    statusCode: null,
+  };
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: input.from,
+          to: Array.isArray(input.to) ? input.to : [input.to],
+          subject: input.subject,
+          html: input.html,
+          ...(input.replyTo ? { reply_to: input.replyTo } : {}),
+        }),
+      });
+
+      const raw = await response.text();
+      let parsed: { id?: string; message?: string; name?: string } = {};
+      try {
+        parsed = raw ? JSON.parse(raw) : {};
+      } catch {
+        parsed = { message: raw || response.statusText };
+      }
+
+      if (!response.ok) {
+        lastError = {
+          name: parsed.name || "application_error",
+          message:
+            parsed.message ||
+            `Resend HTTP ${response.status}: ${response.statusText}`,
+          statusCode: response.status,
+        };
+        if (response.status === 429 || response.status >= 500) {
+          await new Promise((r) => setTimeout(r, attempt * 500));
+          continue;
+        }
+        return { error: lastError };
+      }
+
+      return { id: parsed.id };
+    } catch (err) {
+      const cause =
+        err instanceof Error
+          ? `${err.message}${err.cause ? ` (${String(err.cause)})` : ""}`
+          : String(err);
+      lastError = {
+        name: "application_error",
+        message: `Network error reaching Resend: ${cause}`,
+        statusCode: null,
+      };
+      console.error(`Resend attempt ${attempt}/${maxAttempts} failed:`, cause);
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, attempt * 600));
+      }
+    }
+  }
+
+  return { error: lastError };
 }
 
 function escapeHtml(value: string) {
@@ -217,18 +306,16 @@ function buildCustomerEmailHtml(order: Order) {
                     ${formatPrice(order.subtotal)}
                   </td>
                 </tr>
-                ${
-                  order.discount > 0
+                  ${(order.discount ?? 0) > 0
                     ? `<tr>
                   <td style="padding:8px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#2f6b3a;">
                     Promo${order.promoCode ? ` (${escapeHtml(order.promoCode)})` : ""}
                   </td>
                   <td style="padding:8px 0;text-align:right;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#2f6b3a;">
-                    -${formatPrice(order.discount)}
+                    -${formatPrice(order.discount ?? 0)}
                   </td>
                 </tr>`
-                    : ""
-                }
+                    : ""}
                 <tr>
                   <td style="padding:8px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#8a8276;">
                     Shipping
@@ -315,8 +402,8 @@ function buildAdminEmailHtml(order: Order) {
       </table>
       <p style="margin:4px 0;"><strong>Subtotal:</strong> ${formatPrice(order.subtotal)}</p>
       ${
-        order.discount > 0
-          ? `<p style="margin:4px 0;"><strong>Promo${order.promoCode ? ` (${escapeHtml(order.promoCode)})` : ""}:</strong> -${formatPrice(order.discount)}</p>`
+        (order.discount ?? 0) > 0
+          ? `<p style="margin:4px 0;"><strong>Promo${order.promoCode ? ` (${escapeHtml(order.promoCode)})` : ""}:</strong> -${formatPrice(order.discount ?? 0)}</p>`
           : ""
       }
       <p style="margin:4px 0;"><strong>Shipping:</strong> ${
@@ -328,18 +415,6 @@ function buildAdminEmailHtml(order: Order) {
       </p>
     </div>
   `;
-}
-
-function logEmailResults(
-  results: PromiseSettledResult<{ error: unknown }>[]
-) {
-  for (const result of results) {
-    if (result.status === "rejected") {
-      console.error("Order email failed:", result.reason);
-    } else if (result.value.error) {
-      console.error("Order email error:", result.value.error);
-    }
-  }
 }
 
 function buildStatusUpdateEmailHtml(order: Order) {
@@ -476,43 +551,63 @@ function buildStatusUpdateEmailHtml(order: Order) {
 </html>`;
 }
 
-export async function sendOrderEmails(order: Order): Promise<void> {
-  const resend = getResend();
-  if (!resend) {
-    console.warn(
-      "RESEND_API_KEY is not set — order emails were skipped for",
-      order.orderNumber
-    );
-    return;
+export async function sendOrderEmails(order: Order): Promise<{
+  ok: boolean;
+  errors: string[];
+}> {
+  if (!getApiKey()) {
+    const msg = `RESEND_API_KEY is not set — order emails skipped for ${order.orderNumber}`;
+    console.warn(msg);
+    return { ok: false, errors: [msg] };
   }
 
   const from = getFromAddress();
   const adminEmail = getAdminNotifyEmail();
+  const errors: string[] = [];
 
-  const results = await Promise.allSettled([
-    resend.emails.send({
-      from,
-      to: order.customerEmail,
-      subject: `Order confirmed — ${order.orderNumber} | Baig Essence`,
-      html: buildCustomerEmailHtml(order),
-    }),
-    resend.emails.send({
-      from,
-      to: adminEmail,
-      subject: `New order ${order.orderNumber} — ${formatPrice(order.total)} COD`,
-      html: buildAdminEmailHtml(order),
-    }),
-  ]);
+  console.log(
+    `Sending order emails for ${order.orderNumber} from=${from} customer=${order.customerEmail} admin=${adminEmail}`
+  );
 
-  logEmailResults(results);
+  // Sequential + retries (parallel dual-send can flake on some networks)
+  const customer = await sendViaResendApi({
+    from,
+    to: order.customerEmail,
+    replyTo: adminEmail,
+    subject: `Order confirmed — ${order.orderNumber} | Baig Essence`,
+    html: buildCustomerEmailHtml(order),
+  });
+
+  if (customer.error) {
+    console.error("Customer email error:", customer.error);
+    errors.push(customer.error.message || "Customer email failed");
+  } else {
+    console.log("Customer email sent:", customer.id);
+  }
+
+  const admin = await sendViaResendApi({
+    from,
+    to: adminEmail,
+    replyTo: order.customerEmail,
+    subject: `New order ${order.orderNumber} — ${formatPrice(order.total)} COD`,
+    html: buildAdminEmailHtml(order),
+  });
+
+  if (admin.error) {
+    console.error("Admin email error:", admin.error);
+    errors.push(admin.error.message || "Admin email failed");
+  } else {
+    console.log("Admin email sent:", admin.id);
+  }
+
+  return { ok: errors.length === 0, errors };
 }
 
 /** Email the customer when admin updates fulfillment status. */
 export async function sendOrderStatusUpdateEmail(
   order: Order
 ): Promise<void> {
-  const resend = getResend();
-  if (!resend) {
+  if (!getApiKey()) {
     console.warn(
       "RESEND_API_KEY is not set — status update email skipped for",
       order.orderNumber
@@ -521,7 +616,7 @@ export async function sendOrderStatusUpdateEmail(
   }
 
   const statusLabel = FULFILLMENT_LABELS[order.fulfillmentStatus];
-  const result = await resend.emails.send({
+  const result = await sendViaResendApi({
     from: getFromAddress(),
     to: order.customerEmail,
     subject: `${statusLabel} — ${order.orderNumber} | Baig Essence`,
@@ -530,5 +625,7 @@ export async function sendOrderStatusUpdateEmail(
 
   if (result.error) {
     console.error("Status update email error:", result.error);
+  } else {
+    console.log("Status update email sent:", result.id);
   }
 }
