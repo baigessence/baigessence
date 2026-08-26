@@ -1,10 +1,12 @@
 import {
   getProductById,
   getPromotionForProduct,
+  getPromoCodeByCode,
+  isPromoCodeCurrentlyValid,
+  normalizePromoCode,
 } from "@/lib/db";
-import type { OrderItem } from "@/lib/types";
+import type { OrderItem, PromoCode } from "@/lib/types";
 import {
-  calculateOrderTotal,
   calculateShipping,
   getDiscountedPrice,
 } from "@/lib/utils";
@@ -14,7 +16,22 @@ export type CheckoutLineInput = {
   quantity: number;
 };
 
-export async function buildCheckoutLines(items: CheckoutLineInput[]) {
+export type CheckoutPricing = {
+  lines: OrderItem[];
+  /** Sum of line prices before promo code */
+  subtotal: number;
+  /** Amount subtracted by promo code */
+  discount: number;
+  shipping: number;
+  total: number;
+  promoCode?: string;
+  percentOff?: number;
+};
+
+export async function buildCheckoutLines(
+  items: CheckoutLineInput[],
+  promoCodeInput?: string | null
+): Promise<CheckoutPricing> {
   if (!items.length) {
     throw new Error("Your cart is empty");
   }
@@ -53,8 +70,50 @@ export async function buildCheckoutLines(items: CheckoutLineInput[]) {
     throw new Error("Your cart is empty");
   }
 
-  const shipping = calculateShipping(subtotal);
-  const total = calculateOrderTotal(subtotal);
+  let discount = 0;
+  let appliedCode: string | undefined;
+  let percentOff: number | undefined;
+  let promo: PromoCode | undefined;
 
-  return { lines, subtotal, shipping, total };
+  const rawCode = promoCodeInput?.trim();
+  if (rawCode) {
+    promo = await getPromoCodeByCode(rawCode);
+    if (!promo || !isPromoCodeCurrentlyValid(promo)) {
+      throw new Error("Invalid or expired promo code");
+    }
+    percentOff = promo.percentOff;
+    discount = Math.round(subtotal * (percentOff / 100));
+    discount = Math.min(discount, subtotal);
+    appliedCode = normalizePromoCode(rawCode);
+
+    // Reduce line prices proportionally so order items reflect the discount
+    if (subtotal > 0 && discount > 0) {
+      let allocated = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const lineSubtotal = line.price * line.quantity;
+        const share =
+          i === lines.length - 1
+            ? discount - allocated
+            : Math.round((lineSubtotal / subtotal) * discount);
+        allocated += share;
+        const newLineTotal = Math.max(0, lineSubtotal - share);
+        line.price = Math.round(newLineTotal / line.quantity);
+      }
+    }
+  }
+
+  const discountedSubtotal = Math.max(0, subtotal - discount);
+  const shipping = calculateShipping(discountedSubtotal);
+  const total = discountedSubtotal + shipping;
+
+  return {
+    lines,
+    subtotal,
+    discount,
+    shipping,
+    total,
+    promoCode: appliedCode,
+    percentOff,
+  };
 }

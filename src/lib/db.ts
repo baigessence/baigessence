@@ -1,17 +1,21 @@
-import type { Product, Promotion, Order, OrderItem } from "./types";
+import type { Product, Promotion, PromoCode, Order, OrderItem } from "./types";
 import { slugify } from "./utils";
 import { createAdminClient, createPublicClient } from "./supabase/server";
 import {
   rowToProduct,
   rowToPromotion,
   rowToOrder,
+  rowToPromoCode,
   productToInsert,
   productToUpdate,
   promotionToInsert,
   promotionToUpdate,
+  promoCodeToInsert,
+  promoCodeToUpdate,
   type ProductRow,
   type PromotionRow,
   type OrderRow,
+  type PromoCodeRow,
 } from "./supabase/mappers";
 
 // Products
@@ -294,8 +298,10 @@ type CreateOrderInput = {
   shippingCity: string;
   items: OrderItem[];
   subtotal: number;
+  discount?: number;
   shipping: number;
   total: number;
+  promoCode?: string;
   safepayTracker?: string;
   paymentMethod?: string;
 };
@@ -314,8 +320,10 @@ export async function createOrder(data: CreateOrderInput): Promise<Order> {
       shipping_city: data.shippingCity,
       items: data.items,
       subtotal: data.subtotal,
+      discount: data.discount ?? 0,
       shipping: data.shipping,
       total: data.total,
+      promo_code: data.promoCode ?? null,
       payment_method: data.paymentMethod ?? "cod",
       payment_status: "pending",
       fulfillment_status: "placed",
@@ -464,4 +472,116 @@ export async function updateOrderFulfillment(
 
   if (error) throw error;
   return data ? rowToOrder(data as OrderRow) : null;
+}
+
+// Promo codes (checkout coupons)
+export function normalizePromoCode(code: string): string {
+  return code.trim().toUpperCase().replace(/\s+/g, "");
+}
+
+export function isPromoCodeCurrentlyValid(promo: PromoCode): boolean {
+  if (!promo.active) return false;
+  if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) return false;
+  if (
+    promo.maxRedemptions != null &&
+    promo.redemptionCount >= promo.maxRedemptions
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export async function getPromoCodes(): Promise<PromoCode[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("promo_codes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map((row) => rowToPromoCode(row as PromoCodeRow));
+}
+
+export async function getPromoCodeByCode(
+  code: string
+): Promise<PromoCode | undefined> {
+  const supabase = createAdminClient();
+  const normalized = normalizePromoCode(code);
+  if (!normalized) return undefined;
+
+  const { data, error } = await supabase
+    .from("promo_codes")
+    .select("*")
+    .eq("code", normalized)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ? rowToPromoCode(data as PromoCodeRow) : undefined;
+}
+
+export async function createPromoCode(
+  data: Omit<PromoCode, "id" | "redemptionCount" | "createdAt" | "updatedAt">
+): Promise<PromoCode> {
+  const supabase = createAdminClient();
+  const { data: row, error } = await supabase
+    .from("promo_codes")
+    .insert(promoCodeToInsert(data))
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return rowToPromoCode(row as PromoCodeRow);
+}
+
+export async function updatePromoCode(
+  id: string,
+  data: Partial<
+    Omit<PromoCode, "id" | "redemptionCount" | "createdAt" | "updatedAt">
+  >
+): Promise<PromoCode | null> {
+  const supabase = createAdminClient();
+  const { data: row, error } = await supabase
+    .from("promo_codes")
+    .update(promoCodeToUpdate(data))
+    .eq("id", id)
+    .select("*")
+    .maybeSingle();
+
+  if (error) throw error;
+  return row ? rowToPromoCode(row as PromoCodeRow) : null;
+}
+
+export async function deletePromoCode(id: string): Promise<boolean> {
+  const supabase = createAdminClient();
+  const { error, count } = await supabase
+    .from("promo_codes")
+    .delete({ count: "exact" })
+    .eq("id", id);
+
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+export async function incrementPromoCodeRedemption(
+  id: string
+): Promise<void> {
+  const supabase = createAdminClient();
+  const existing = await supabase
+    .from("promo_codes")
+    .select("redemption_count")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (existing.error) throw existing.error;
+  const current = (existing.data?.redemption_count as number | undefined) ?? 0;
+
+  const { error } = await supabase
+    .from("promo_codes")
+    .update({
+      redemption_count: current + 1,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) throw error;
 }

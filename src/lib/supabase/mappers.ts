@@ -2,6 +2,7 @@ import type {
   Category,
   Product,
   Promotion,
+  PromoCode,
   Order,
   OrderItem,
   OrderPaymentStatus,
@@ -52,13 +53,28 @@ export type OrderRow = {
   shipping_city: string;
   items: OrderItem[];
   subtotal: number;
+  discount: number | null;
   shipping: number;
   total: number;
+  promo_code: string | null;
   payment_method: string;
   payment_status: OrderPaymentStatus;
   fulfillment_status: OrderFulfillmentStatus | null;
   tracking_note: string | null;
   safepay_tracker: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PromoCodeRow = {
+  id: string;
+  code: string;
+  percent_off: number;
+  description: string;
+  active: boolean;
+  expires_at: string | null;
+  max_redemptions: number | null;
+  redemption_count: number;
   created_at: string;
   updated_at: string;
 };
@@ -97,8 +113,10 @@ export function rowToOrder(row: OrderRow): Order {
     shippingCity: row.shipping_city,
     items: row.items ?? [],
     subtotal: row.subtotal,
+    discount: row.discount ?? 0,
     shipping: row.shipping,
     total: row.total,
+    promoCode: row.promo_code ?? undefined,
     paymentMethod: row.payment_method,
     paymentStatus: row.payment_status,
     fulfillmentStatus: row.fulfillment_status ?? "placed",
@@ -107,6 +125,51 @@ export function rowToOrder(row: OrderRow): Order {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+export function rowToPromoCode(row: PromoCodeRow): PromoCode {
+  return {
+    id: row.id,
+    code: row.code,
+    percentOff: row.percent_off,
+    description: row.description ?? "",
+    active: row.active,
+    expiresAt: row.expires_at ?? undefined,
+    maxRedemptions: row.max_redemptions ?? undefined,
+    redemptionCount: row.redemption_count,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function promoCodeToInsert(
+  data: Omit<PromoCode, "id" | "redemptionCount" | "createdAt" | "updatedAt">
+) {
+  return {
+    code: data.code.trim().toUpperCase(),
+    percent_off: data.percentOff,
+    description: data.description ?? "",
+    active: data.active,
+    expires_at: data.expiresAt ?? null,
+    max_redemptions: data.maxRedemptions ?? null,
+  };
+}
+
+export function promoCodeToUpdate(
+  data: Partial<Omit<PromoCode, "id" | "redemptionCount" | "createdAt" | "updatedAt">>
+) {
+  const row: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (data.code !== undefined) row.code = data.code.trim().toUpperCase();
+  if (data.percentOff !== undefined) row.percent_off = data.percentOff;
+  if (data.description !== undefined) row.description = data.description;
+  if (data.active !== undefined) row.active = data.active;
+  if (data.expiresAt !== undefined) row.expires_at = data.expiresAt || null;
+  if (data.maxRedemptions !== undefined) {
+    row.max_redemptions = data.maxRedemptions ?? null;
+  }
+  return row;
 }
 
 export function rowToPromotion(row: PromotionRow): Promotion {

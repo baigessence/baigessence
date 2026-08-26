@@ -58,6 +58,47 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Pointer cursor on all interactive / clickable elements */
+a,
+button,
+[role="button"],
+[role="link"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+[role="switch"],
+[role="checkbox"],
+[role="radio"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+input[type="image"],
+select,
+summary,
+label[for],
+.btn-primary,
+.btn-outline,
+.btn-gold,
+.btn-ghost-light,
+.nav-link,
+.admin-sidebar-link {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled="true"],
+.btn-primary:disabled,
+.btn-outline:disabled,
+.btn-gold:disabled {
+  cursor: not-allowed;
+}
+
 .font-serif {
   font-family: var(--font-playfair), Georgia, serif;
 }

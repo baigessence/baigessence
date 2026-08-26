@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, Plus } from "lucide-react";
+import { Eye, Plus, ShoppingBag } from "lucide-react";
 import type { Product, Promotion } from "@/lib/types";
 import { formatPrice, getDiscountedPrice, getCategoryLabel } from "@/lib/utils";
 import { useCart } from "@/components/CartProvider";
@@ -14,7 +14,10 @@ type ProductCardProps = {
 
 export default function ProductCard({ product, promotion }: ProductCardProps) {
   const { addItem } = useCart();
-  const { price, originalPrice, hasDiscount } = getDiscountedPrice(product, promotion);
+  const { price, originalPrice, hasDiscount } = getDiscountedPrice(
+    product,
+    promotion
+  );
   const discountPercent = hasDiscount
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
     : 0;
@@ -52,18 +55,20 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
           )}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-center gap-3 bg-gradient-to-t from-black/80 to-transparent p-5 transition-transform duration-500 group-hover:translate-y-0">
+        {/* Desktop: hover overlay */}
+        <div className="absolute inset-x-0 bottom-0 hidden translate-y-full items-center justify-center gap-3 bg-gradient-to-t from-black/80 to-transparent p-5 transition-transform duration-500 group-hover:translate-y-0 md:flex">
           <Link
             href={`/product/${product.slug}`}
-            className="flex h-11 w-11 items-center justify-center bg-white text-charcoal transition-all hover:bg-gold hover:scale-105"
+            className="flex h-11 w-11 items-center justify-center bg-white text-charcoal transition-all hover:scale-105 hover:bg-gold"
             aria-label="View product"
           >
             <Eye className="h-4 w-4" />
           </Link>
           {product.inStock && (
             <button
+              type="button"
               onClick={() => addItem(product)}
-              className="flex h-11 items-center gap-2 bg-gold px-5 text-xs font-semibold tracking-widest text-charcoal uppercase transition-all hover:bg-white hover:scale-105"
+              className="flex h-11 items-center gap-2 bg-gold px-5 text-xs font-semibold tracking-widest text-charcoal uppercase transition-all hover:scale-105 hover:bg-white"
               aria-label="Add to cart"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -73,20 +78,22 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
         </div>
       </div>
 
-      <div className="p-5">
+      <div className="p-4 sm:p-5">
         <p className="text-[10px] tracking-[0.25em] text-gold uppercase">
           {getCategoryLabel(product.category)}
         </p>
         <Link href={`/product/${product.slug}`}>
-          <h3 className="mt-1.5 font-serif text-xl transition-colors duration-300 group-hover:text-gold">
+          <h3 className="mt-1.5 font-serif text-lg transition-colors duration-300 group-hover:text-gold sm:text-xl">
             {product.name}
           </h3>
         </Link>
         <p className="mt-1.5 line-clamp-1 text-xs text-muted">
           {product.shortDescription}
         </p>
-        <div className="mt-4 flex items-baseline gap-2">
-          <span className="text-lg font-medium">{formatPrice(price)}</span>
+        <div className="mt-3 flex items-baseline gap-2 sm:mt-4">
+          <span className="text-base font-medium sm:text-lg">
+            {formatPrice(price)}
+          </span>
           {hasDiscount && (
             <span className="text-sm text-muted line-through">
               {formatPrice(originalPrice)}
@@ -96,6 +103,23 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
         <p className="mt-1 text-[10px] tracking-wider text-muted/80 uppercase">
           {product.size} · {product.concentration}
         </p>
+
+        {/* Mobile: always-visible add to bag */}
+        {product.inStock ? (
+          <button
+            type="button"
+            onClick={() => addItem(product)}
+            className="mt-3 flex w-full items-center justify-center gap-1.5 bg-charcoal px-3 py-2.5 text-[10px] font-semibold tracking-widest text-white uppercase transition-colors hover:bg-gold hover:text-charcoal md:hidden"
+            aria-label={`Add ${product.name} to bag`}
+          >
+            <ShoppingBag className="h-3.5 w-3.5" />
+            Add to Bag
+          </button>
+        ) : (
+          <p className="mt-3 text-center text-[10px] tracking-wider text-muted uppercase md:hidden">
+            Sold out
+          </p>
+        )}
       </div>
     </article>
   );

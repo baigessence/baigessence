@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { buildCheckoutLines } from "@/lib/checkout";
-import { createOrder } from "@/lib/db";
+import {
+  createOrder,
+  getPromoCodeByCode,
+  incrementPromoCodeRedemption,
+} from "@/lib/db";
 import { sendOrderEmails } from "@/lib/email";
 
 type CheckoutBody = {
   items: { productId: string; quantity: number }[];
+  promoCode?: string;
   customer: {
     firstName: string;
     lastName: string;
@@ -39,9 +44,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const { lines, subtotal, shipping, total } = await buildCheckoutLines(
-      body.items
-    );
+    const { lines, subtotal, discount, shipping, total, promoCode } =
+      await buildCheckoutLines(body.items, body.promoCode);
 
     const order = await createOrder({
       customerName: `${firstName.trim()} ${lastName.trim()}`,
@@ -51,12 +55,22 @@ export async function POST(request: Request) {
       shippingCity: city.trim(),
       items: lines,
       subtotal,
+      discount,
       shipping,
       total,
+      promoCode,
       paymentMethod: "cod",
     });
 
-    // Emails should not block order success if the provider fails
+    if (promoCode) {
+      try {
+        const promo = await getPromoCodeByCode(promoCode);
+        if (promo) await incrementPromoCodeRedemption(promo.id);
+      } catch (err) {
+        console.error("Failed to increment promo redemption:", err);
+      }
+    }
+
     try {
       await sendOrderEmails(order);
     } catch (emailError) {
@@ -68,6 +82,8 @@ export async function POST(request: Request) {
       orderId: order.id,
       orderNumber: order.orderNumber,
       total: order.total,
+      discount: order.discount,
+      promoCode: order.promoCode,
     });
   } catch (error) {
     console.error("Checkout error:", error);

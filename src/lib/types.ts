@@ -34,6 +34,20 @@ export type Promotion = {
   badge?: string;
 };
 
+/** Customer-entered coupon codes (admin-managed). */
+export type PromoCode = {
+  id: string;
+  code: string;
+  percentOff: number;
+  description: string;
+  active: boolean;
+  expiresAt?: string;
+  maxRedemptions?: number;
+  redemptionCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CartItem = {
   product: Product;
   quantity: number;
@@ -70,8 +84,10 @@ export type Order = {
   shippingCity: string;
   items: OrderItem[];
   subtotal: number;
+  discount: number;
   shipping: number;
   total: number;
+  promoCode?: string;
   paymentMethod: string;
   paymentStatus: OrderPaymentStatus;
   fulfillmentStatus: OrderFulfillmentStatus;

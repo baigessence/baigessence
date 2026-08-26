@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   ShoppingBag,
+  TicketPercent,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const links = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/promotions", label: "Promotions", icon: Tag },
+  { href: "/admin/promo-codes", label: "Promo Codes", icon: TicketPercent },
 ];
 
 export default function AdminSidebar() {

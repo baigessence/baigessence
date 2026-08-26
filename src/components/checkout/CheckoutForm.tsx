@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,17 @@ export default function CheckoutForm() {
   const { items, totalPrice, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplying, setPromoApplying] = useState(false);
+  const [promoError, setPromoError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    percentOff: number;
+    discount: number;
+    shipping: number;
+    total: number;
+    subtotal: number;
+  } | null>(null);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -25,8 +36,70 @@ export default function CheckoutForm() {
     city: "",
   });
 
-  const shipping = calculateShipping(totalPrice);
-  const total = calculateOrderTotal(totalPrice);
+  const baseShipping = calculateShipping(totalPrice);
+  const baseTotal = calculateOrderTotal(totalPrice);
+
+  const display = useMemo(() => {
+    if (appliedPromo) {
+      return {
+        subtotal: appliedPromo.subtotal,
+        discount: appliedPromo.discount,
+        shipping: appliedPromo.shipping,
+        total: appliedPromo.total,
+      };
+    }
+    return {
+      subtotal: totalPrice,
+      discount: 0,
+      shipping: baseShipping,
+      total: baseTotal,
+    };
+  }, [appliedPromo, totalPrice, baseShipping, baseTotal]);
+
+  const cartItemsPayload = () =>
+    items.map(({ product, quantity }) => ({
+      productId: product.id,
+      quantity,
+    }));
+
+  const applyPromo = async () => {
+    setPromoApplying(true);
+    setPromoError("");
+    try {
+      const res = await fetch("/api/promo-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: promoInput,
+          items: cartItemsPayload(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        throw new Error(data.error || "Invalid promo code");
+      }
+      setAppliedPromo({
+        code: data.code,
+        percentOff: data.percentOff,
+        discount: data.discount,
+        shipping: data.shipping,
+        total: data.total,
+        subtotal: data.subtotal,
+      });
+      setPromoInput(data.code);
+    } catch (err) {
+      setAppliedPromo(null);
+      setPromoError(err instanceof Error ? err.message : "Invalid promo code");
+    } finally {
+      setPromoApplying(false);
+    }
+  };
+
+  const removePromo = () => {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,10 +111,8 @@ export default function CheckoutForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items.map(({ product, quantity }) => ({
-            productId: product.id,
-            quantity,
-          })),
+          items: cartItemsPayload(),
+          promoCode: appliedPromo?.code,
           customer: form,
         }),
       });
@@ -203,18 +274,65 @@ export default function CheckoutForm() {
             ))}
           </div>
 
+          <div className="mt-6 border-t pt-4">
+            <label className="mb-1 block text-sm font-medium">Promo code</label>
+            <div className="flex gap-2">
+              <input
+                className="input-field uppercase"
+                placeholder="SAVE10"
+                value={promoInput}
+                disabled={!!appliedPromo}
+                onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+              />
+              {appliedPromo ? (
+                <button
+                  type="button"
+                  onClick={removePromo}
+                  className="btn-outline shrink-0 px-4 text-xs"
+                >
+                  Remove
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={applyPromo}
+                  disabled={promoApplying || !promoInput.trim()}
+                  className="btn-outline shrink-0 px-4 text-xs disabled:opacity-50"
+                >
+                  {promoApplying ? "..." : "Apply"}
+                </button>
+              )}
+            </div>
+            {promoError && (
+              <p className="mt-2 text-xs text-red-600">{promoError}</p>
+            )}
+            {appliedPromo && (
+              <p className="mt-2 text-xs text-green-700">
+                {appliedPromo.code} applied — {appliedPromo.percentOff}% off
+              </p>
+            )}
+          </div>
+
           <div className="mt-6 space-y-3 border-t pt-4 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Subtotal</span>
-              <span>{formatPrice(totalPrice)}</span>
+              <span>{formatPrice(display.subtotal)}</span>
             </div>
+            {display.discount > 0 && (
+              <div className="flex justify-between text-green-700">
+                <span>Promo discount</span>
+                <span>-{formatPrice(display.discount)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-muted">Shipping</span>
-              <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
+              <span>
+                {display.shipping === 0 ? "Free" : formatPrice(display.shipping)}
+              </span>
             </div>
             <div className="flex justify-between text-lg font-medium">
               <span>Total (COD)</span>
-              <span>{formatPrice(total)}</span>
+              <span>{formatPrice(display.total)}</span>
             </div>
           </div>
 

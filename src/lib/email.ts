@@ -217,6 +217,18 @@ function buildCustomerEmailHtml(order: Order) {
                     ${formatPrice(order.subtotal)}
                   </td>
                 </tr>
+                ${
+                  order.discount > 0
+                    ? `<tr>
+                  <td style="padding:8px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#2f6b3a;">
+                    Promo${order.promoCode ? ` (${escapeHtml(order.promoCode)})` : ""}
+                  </td>
+                  <td style="padding:8px 0;text-align:right;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#2f6b3a;">
+                    -${formatPrice(order.discount)}
+                  </td>
+                </tr>`
+                    : ""
+                }
                 <tr>
                   <td style="padding:8px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#8a8276;">
                     Shipping
@@ -302,6 +314,11 @@ function buildAdminEmailHtml(order: Order) {
         ${orderItemsRows(order)}
       </table>
       <p style="margin:4px 0;"><strong>Subtotal:</strong> ${formatPrice(order.subtotal)}</p>
+      ${
+        order.discount > 0
+          ? `<p style="margin:4px 0;"><strong>Promo${order.promoCode ? ` (${escapeHtml(order.promoCode)})` : ""}:</strong> -${formatPrice(order.discount)}</p>`
+          : ""
+      }
       <p style="margin:4px 0;"><strong>Shipping:</strong> ${
         order.shipping === 0 ? "Free" : formatPrice(order.shipping)
       }</p>
