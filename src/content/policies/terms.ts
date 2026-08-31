@@ -200,7 +200,7 @@ export const termsAndConditions: PolicyDocument = {
         "If you have any questions regarding these Terms & Conditions or require further assistance, you may contact us using the details below.",
         "Baig Essence",
         "Email: baigessence@gmail.com",
-        "Phone: 03226053521",
+        "Phone: 03134005009",
       ],
     },
   ],

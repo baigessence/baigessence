@@ -79,7 +79,7 @@ export const refundPolicy: PolicyDocument = {
         "If you have any questions or wish to request a refund or exchange, please contact our customer support team with your Order Number, Full Name, Reason for the Request, and any relevant photos (if applicable). We will be happy to assist you.",
         "Baig Essence",
         "Email: baigessence@gmail.com",
-        "Phone: +92-3226053521",
+        "Phone: 03134005009",
       ],
     },
   ],

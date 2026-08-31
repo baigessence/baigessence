@@ -89,7 +89,7 @@ export const shippingPolicy: PolicyDocument = {
         "If you have any questions regarding shipping or delivery, please contact us:",
         "Baig Essence",
         "Email: baigessence@gmail.com",
-        "Phone: +92-3226053521",
+        "Phone: 03134005009",
       ],
     },
   ],

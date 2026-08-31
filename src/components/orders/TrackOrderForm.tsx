@@ -118,7 +118,7 @@ export default function TrackOrderForm() {
             <input
               type="tel"
               className="input-field"
-              placeholder="+92 322 6053521"
+              placeholder="0313 4005009"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />

@@ -12,6 +12,7 @@ import {
   SITE_EMAIL,
   SITE_PHONE,
   SITE_PHONE_DISPLAY,
+  WHATSAPP_DISPLAY,
 } from "@/lib/contact";
 
 export const metadata: Metadata = {
@@ -41,7 +42,7 @@ const contactCards = [
   {
     icon: MessageCircle,
     title: "WhatsApp",
-    lines: [SITE_PHONE_DISPLAY, "Quick responses"],
+    lines: [WHATSAPP_DISPLAY, "Quick responses"],
     href: getWhatsAppUrl(),
   },
 ];

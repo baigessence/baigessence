@@ -177,7 +177,7 @@ export const privacyPolicy: PolicyDocument = {
         "If you have any questions about this Privacy Policy or how your information is handled, please contact us:",
         "Baig Essence",
         "Email: baigessence@gmail.com",
-        "Phone: +92-3226053521",
+        "Phone: 03134005009",
         "Website: https://www.baigessence.com",
       ],
     },

@@ -1,10 +1,12 @@
-export const SITE_PHONE = "+923226053521";
-export const SITE_PHONE_DISPLAY = "+92 322 6053521";
+export const SITE_PHONE = "+923134005009";
+export const SITE_PHONE_DISPLAY = "0313 4005009";
 export const SITE_EMAIL = "baigessence@gmail.com";
 export const SITE_ADDRESS = "114B, Naz Town near Valencia town, Lahore";
 export const SITE_CITY = "Lahore, Pakistan";
 
+/** WhatsApp chat stays on the existing business WhatsApp number. */
 export const WHATSAPP_NUMBER = "923226053521";
+export const WHATSAPP_DISPLAY = "+92 322 6053521";
 
 export const SOCIAL_LINKS = {
   facebook: "https://www.facebook.com/share/14mMX9NqWMt/?mibextid=wwXIfr",
