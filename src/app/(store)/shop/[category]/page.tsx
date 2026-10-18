@@ -49,8 +49,11 @@ export default async function CategoryShopPage({ params, searchParams }: PagePro
   }
 
   const sortParams = await searchParams;
-  let products = await getProductsByCategory(category);
-  const promotions = await getActivePromotions();
+  const [categoryProducts, promotions] = await Promise.all([
+    getProductsByCategory(category),
+    getActivePromotions(),
+  ]);
+  let products = categoryProducts;
 
   if (sortParams.sort === "price-low") {
     products.sort((a, b) => a.price - b.price);

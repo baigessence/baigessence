@@ -97,6 +97,17 @@ export default function Footer() {
 
         <div className="mt-14 border-t border-white/5 pt-8 text-center text-xs text-gray-500">
           <p>&copy; {new Date().getFullYear()} Baig Essence. All rights reserved.</p>
+          <p className="mt-2">
+            Made by{" "}
+            <a
+              href="https://syed-talha-hashmi.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 transition-colors hover:text-gold"
+            >
+              Syed Talha Hashmi
+            </a>
+          </p>
         </div>
       </div>
     </footer>

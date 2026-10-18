@@ -17,8 +17,11 @@ export default async function ShopPage({
   searchParams: SearchParams;
 }) {
   const params = await searchParams;
-  let products = await getProducts();
-  const promotions = await getActivePromotions();
+  const [allProducts, promotions] = await Promise.all([
+    getProducts(),
+    getActivePromotions(),
+  ]);
+  let products = allProducts;
 
   if (params.q) {
     const query = params.q.toLowerCase();

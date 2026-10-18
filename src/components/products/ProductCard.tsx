@@ -25,7 +25,7 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
   return (
     <article className="group card-luxury product-glow overflow-hidden">
       <div className="relative aspect-[3/4] overflow-hidden bg-cream">
-        <Link href={`/product/${product.slug}`}>
+        <Link href={`/product/${product.slug}`} prefetch>
           <Image
             src={product.image}
             alt={product.name}
@@ -83,26 +83,23 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
           {getCategoryLabel(product.category)}
         </p>
         <Link href={`/product/${product.slug}`}>
-          <h3 className="mt-1.5 font-serif text-lg transition-colors duration-300 group-hover:text-gold sm:text-xl">
+          <h3 className="mt-1.5 font-serif text-base leading-snug transition-colors duration-300 group-hover:text-gold sm:text-xl">
             {product.name}
           </h3>
         </Link>
-        <p className="mt-1.5 line-clamp-1 text-xs text-muted">
-          {product.shortDescription}
-        </p>
-        <div className="mt-3 flex items-baseline gap-2 sm:mt-4">
-          <span className="text-base font-medium sm:text-lg">
+        <div className="mt-2 flex flex-wrap items-baseline gap-2 sm:mt-3">
+          <span className="text-sm font-medium sm:text-lg">
             {formatPrice(price)}
           </span>
           {hasDiscount && (
-            <span className="text-sm text-muted line-through">
+            <span className="text-xs text-muted line-through sm:text-sm">
               {formatPrice(originalPrice)}
             </span>
           )}
+          <span className="w-full text-[10px] tracking-wider text-muted/80 uppercase sm:w-auto">
+            {product.size}
+          </span>
         </div>
-        <p className="mt-1 text-[10px] tracking-wider text-muted/80 uppercase">
-          {product.size} · {product.concentration}
-        </p>
 
         {/* Mobile: always-visible add to cart */}
         {product.inStock ? (

@@ -135,7 +135,7 @@ export default function CheckoutForm() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-20 text-center lg:px-8">
-        <h1 className="font-serif text-3xl">Your bag is empty</h1>
+        <h1 className="font-serif text-3xl">Your cart is empty</h1>
         <p className="mt-2 text-muted">Add products before checkout</p>
         <Link href="/shop" className="btn-primary mt-8 inline-block">
           Shop Fragrances

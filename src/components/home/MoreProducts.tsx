@@ -9,14 +9,14 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import { ArrowRight } from "lucide-react";
 
 export default async function MoreProducts() {
-  const bestSellers = await getBestSellerProducts(4);
-  const [products, promotions] = await Promise.all([
-    getOtherProducts(
-      bestSellers.map((product) => product.id),
-      4
-    ),
+  const [bestSellers, promotions] = await Promise.all([
+    getBestSellerProducts(4),
     getActivePromotions(),
   ]);
+  const products = await getOtherProducts(
+    bestSellers.map((product) => product.id),
+    4
+  );
 
   if (products.length === 0) {
     return null;

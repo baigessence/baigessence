@@ -1,6 +1,7 @@
 import type { Product, Promotion, PromoCode, Order, OrderItem } from "./types";
 import { slugify } from "./utils";
-import { createAdminClient, createPublicClient } from "./supabase/server";
+import { createAdminClient } from "./supabase/server";
+import { revalidateCatalog } from "./catalog";
 import {
   rowToProduct,
   rowToPromotion,
@@ -18,114 +19,22 @@ import {
   type PromoCodeRow,
 } from "./supabase/mappers";
 
-// Products
-export async function getProducts(): Promise<Product[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-  return (data as ProductRow[]).map(rowToProduct);
-}
-
-export async function getProductById(id: string): Promise<Product | undefined> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ? rowToProduct(data as ProductRow) : undefined;
-}
-
-export async function getProductBySlug(slug: string): Promise<Product | undefined> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ? rowToProduct(data as ProductRow) : undefined;
-}
-
-export async function getProductsByCategory(category: string): Promise<Product[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("category", category)
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-  return (data as ProductRow[]).map(rowToProduct);
-}
-
-export async function getFeaturedProducts(): Promise<Product[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("featured", true)
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-  return (data as ProductRow[]).map(rowToProduct);
-}
-
-export async function getBestSellerProducts(limit = 4): Promise<Product[]> {
-  const featured = await getFeaturedProducts();
-
-  if (featured.length >= limit) {
-    return featured.slice(0, limit);
-  }
-
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(limit + featured.length);
-
-  if (error) throw error;
-
-  const recent = (data as ProductRow[]).map(rowToProduct);
-  const featuredIds = new Set(featured.map((product) => product.id));
-  const merged = [...featured];
-
-  for (const product of recent) {
-    if (merged.length >= limit) break;
-    if (!featuredIds.has(product.id)) {
-      merged.push(product);
-    }
-  }
-
-  return merged;
-}
-
-export async function getOtherProducts(
-  excludeIds: string[],
-  limit = 4
-): Promise<Product[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-
-  const exclude = new Set(excludeIds);
-  return (data as ProductRow[])
-    .map(rowToProduct)
-    .filter((product) => !exclude.has(product.id))
-    .slice(0, limit);
-}
+// Cached catalog reads (one Supabase fetch per cache window)
+export {
+  getProducts,
+  getProductById,
+  getProductBySlug,
+  getProductsByCategory,
+  getFeaturedProducts,
+  getBestSellerProducts,
+  getOtherProducts,
+  getRelatedProducts,
+  getPromotions,
+  getPromotionById,
+  getActivePromotions,
+  getPromotionForProduct,
+  revalidateCatalog,
+} from "./catalog";
 
 export async function createProduct(
   data: Omit<Product, "id" | "slug" | "createdAt" | "updatedAt">
@@ -140,6 +49,7 @@ export async function createProduct(
     .single();
 
   if (error) throw error;
+  revalidateCatalog();
   return rowToProduct(row as ProductRow);
 }
 
@@ -162,6 +72,7 @@ export async function updateProduct(
     .maybeSingle();
 
   if (error) throw error;
+  if (row) revalidateCatalog();
   return row ? rowToProduct(row as ProductRow) : null;
 }
 
@@ -188,53 +99,8 @@ export async function deleteProduct(id: string): Promise<boolean> {
     .eq("id", id);
 
   if (error) throw error;
+  if ((count ?? 0) > 0) revalidateCatalog();
   return (count ?? 0) > 0;
-}
-
-// Promotions
-export async function getPromotions(): Promise<Promotion[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("promotions")
-    .select("*")
-    .order("start_date", { ascending: false });
-
-  if (error) throw error;
-  return (data as PromotionRow[]).map(rowToPromotion);
-}
-
-export async function getPromotionById(id: string): Promise<Promotion | undefined> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("promotions")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ? rowToPromotion(data as PromotionRow) : undefined;
-}
-
-export async function getActivePromotions(): Promise<Promotion[]> {
-  const supabase = createPublicClient();
-  const now = new Date().toISOString();
-
-  const { data, error } = await supabase
-    .from("promotions")
-    .select("*")
-    .eq("active", true)
-    .lte("start_date", now)
-    .gte("end_date", now);
-
-  if (error) throw error;
-  return (data as PromotionRow[]).map(rowToPromotion);
-}
-
-export async function getPromotionForProduct(
-  productId: string
-): Promise<Promotion | undefined> {
-  const promotions = await getActivePromotions();
-  return promotions.find((p) => p.productIds.includes(productId));
 }
 
 export async function createPromotion(
@@ -249,6 +115,7 @@ export async function createPromotion(
     .single();
 
   if (error) throw error;
+  revalidateCatalog();
   return rowToPromotion(row as PromotionRow);
 }
 
@@ -266,6 +133,7 @@ export async function updatePromotion(
     .maybeSingle();
 
   if (error) throw error;
+  if (row) revalidateCatalog();
   return row ? rowToPromotion(row as PromotionRow) : null;
 }
 
@@ -278,6 +146,7 @@ export async function deletePromotion(id: string): Promise<boolean> {
     .eq("id", id);
 
   if (error) throw error;
+  if ((count ?? 0) > 0) revalidateCatalog();
   return (count ?? 0) > 0;
 }
 

@@ -18,7 +18,7 @@ export default function CartPage() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-20 text-center lg:px-8">
         <ShoppingBag className="mx-auto h-20 w-20 text-gray-200" />
-        <h1 className="mt-6 font-serif text-3xl">Your bag is empty</h1>
+        <h1 className="mt-6 font-serif text-3xl">Your cart is empty</h1>
         <p className="mt-2 text-muted">Discover our premium fragrance collection</p>
         <Link href="/shop" className="btn-primary mt-8 inline-block">
           Start Shopping
@@ -32,7 +32,7 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
-      <h1 className="font-serif text-3xl">Shopping Bag</h1>
+      <h1 className="font-serif text-3xl">Shopping Cart</h1>
 
       <div className="mt-10 grid gap-12 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -100,7 +100,7 @@ export default function CartPage() {
             onClick={clearCart}
             className="mt-6 text-sm text-muted underline hover:text-charcoal"
           >
-            Clear bag
+            Clear cart
           </button>
         </div>
 

@@ -28,7 +28,7 @@ export default function CartDrawer() {
       >
         <div className="flex items-center justify-between border-b p-6">
           <h2 className="font-serif text-xl">
-            Your Bag ({totalItems})
+            Your Cart ({totalItems})
           </h2>
           <button onClick={() => setIsOpen(false)} aria-label="Close cart">
             <X className="h-6 w-6" />
@@ -38,7 +38,7 @@ export default function CartDrawer() {
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
             <ShoppingBag className="h-16 w-16 text-gray-200" />
-            <p className="text-muted">Your bag is empty</p>
+            <p className="text-muted">Your cart is empty</p>
             <button onClick={() => setIsOpen(false)} className="btn-outline">
               Continue Shopping
             </button>

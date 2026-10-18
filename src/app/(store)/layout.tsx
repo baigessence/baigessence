@@ -2,7 +2,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
 
-export const dynamic = "force-dynamic";
+/** ISR: refresh storefront catalog every 2 minutes */
+export const revalidate = 120;
 
 export default function StoreLayout({
   children,
